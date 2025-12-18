@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003
+      author: me
+      changes:
+        - createTable:
+            tableName: messages
+            columns:
+              - column:
+                  name: primary_mid
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column: { name: timestamp, type: BIGINT }
+              - column: { name: upsert_mid, type: VARCHAR(255) }
+              - column: { name: sender_id, type: VARCHAR(255) }
+              - column: { name: sender_name, type: VARCHAR(255) }
+              - column: { name: upsert_timestamp, type: BIGINT }
+              - column: { name: text, type: TEXT }
+              - column: { name: upsert_date, type: DATE }
+              - column: { name: attachment_id, type: VARCHAR(255) }
+              - column: { name: preview_small, type: TEXT }
+              - column: { name: preview_large, type: TEXT }
+              - column: { name: video_title, type: VARCHAR(512) }
+              - column: { name: video_description, type: TEXT }
+              - column: { name: video_author, type: VARCHAR(255) }
+              - column: { name: cta_url, type: VARCHAR(255) }
+              - column: { name: object_id, type: VARCHAR(255) }
+              - column: { name: reaction_sender_id, type: VARCHAR(255) }
+              - column: { name: reaction_sender_name, type: VARCHAR(255) }
+              - column: { name: reaction, type: VARCHAR(255) }
+              - column: { name: reaction_timestamp, type: BIGINT }
+              - column: { name: reaction_date, type: DATE }
+              - column: { name: has_reaction, type: BOOLEAN, defaultValueBoolean: false, constraints: { nullable: false } }
+              - column: { name: has_reel, type: BOOLEAN, defaultValueBoolean: false, constraints: { nullable: false } }

@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001-init-superuser.yaml
+  - include:
+      file: db/changelog/002-init-friendrelation.yaml
+  - include:
+      file: db/changelog/003-init-messages.yaml
+  - include:
+      file: db/changelog/004-create-average-reels-view.yaml

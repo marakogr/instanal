@@ -1,0 +1,82 @@
+plugins {
+	id "java"
+	id "org.springframework.boot" version "4.0.0"
+	id "io.spring.dependency-management" version "1.1.7"
+	id "com.vaadin" version "25.0.0"
+}
+
+group = "ru.marakogr"
+version = "0.0.1"
+description = "Demo project for Spring Boot"
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+test {
+    useJUnitPlatform()
+    maxParallelForks = 1
+    forkEvery = 0  // Отключает форк процессов
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	set("vaadinVersion", "25.0.0")
+	set("postgresVersion", "42.7.1")
+	set("jacksonVersion", "2.20.1")
+	set("lombokBindingVersion", "0.2.0")
+	set("lombokVersion", "1.18.42")
+	set("mapstructVersion", "1.5.5.Final")
+	set("liquibaseVersion", "4.23.2")
+	set("preliquibase", "1.6.0")
+}
+
+dependencies {
+	// Spring
+	implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+	implementation "org.springframework.boot:spring-boot-starter-jdbc"
+	implementation "org.springframework.boot:spring-boot-starter-webmvc"
+	implementation "org.springframework.boot:spring-boot-starter-liquibase"
+
+	// Jackson
+	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+	implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+
+	// Postgres
+	implementation "org.postgresql:postgresql:${postgresVersion}"
+	runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
+
+	// MapStruct
+	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+	annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+
+	// Lombok
+	compileOnly("org.projectlombok:lombok:${lombokVersion}")
+	annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+	testCompileOnly("org.projectlombok:lombok:${lombokVersion}")
+	testAnnotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+	annotationProcessor "org.projectlombok:lombok-mapstruct-binding:${lombokBindingVersion}"
+
+	// Vaadin
+	developmentOnly "com.vaadin:vaadin-dev"
+	implementation "com.vaadin:vaadin-spring-boot-starter"
+
+	testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "com.vaadin:vaadin-bom:${vaadinVersion}"
+	}
+}
+
+tasks.named("test") {
+	useJUnitPlatform()
+}
