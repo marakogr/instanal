@@ -13,6 +13,9 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
               - column:
+                  name: superset_user_id
+                  type: BIGSERIAL
+              - column:
                   name: name
                   type: VARCHAR(255)
               - column:

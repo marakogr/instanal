@@ -3,11 +3,12 @@ plugins {
 	id "org.springframework.boot" version "4.0.0"
 	id "io.spring.dependency-management" version "1.1.7"
 	id "com.vaadin" version "25.0.0"
+	id "com.diffplug.spotless" version "7.0.4" apply false
 }
 
 group = "ru.marakogr"
-version = "0.0.1"
-description = "Demo project for Spring Boot"
+version = "0.0.2"
+description = "Application to analyze chats from Instagram friends."
 
 java {
 	toolchain {
@@ -18,7 +19,7 @@ java {
 test {
     useJUnitPlatform()
     maxParallelForks = 1
-    forkEvery = 0  // Отключает форк процессов
+    forkEvery = 0
 }
 
 repositories {
@@ -34,6 +35,9 @@ ext {
 	set("mapstructVersion", "1.5.5.Final")
 	set("liquibaseVersion", "4.23.2")
 	set("preliquibase", "1.6.0")
+	set("feignJacksonVersion", "13.5")
+	set("openapitoolsVersion", "0.2.8")
+	set("springCloudVersion", "2025.1.0")
 }
 
 dependencies {
@@ -42,10 +46,12 @@ dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-jdbc"
 	implementation "org.springframework.boot:spring-boot-starter-webmvc"
 	implementation "org.springframework.boot:spring-boot-starter-liquibase"
+	implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
 
 	// Jackson
 	implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
 	implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+	implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jacksonVersion}")
 
 	// Postgres
 	implementation "org.postgresql:postgresql:${postgresVersion}"
@@ -66,6 +72,10 @@ dependencies {
 	developmentOnly "com.vaadin:vaadin-dev"
 	implementation "com.vaadin:vaadin-spring-boot-starter"
 
+	// Feign
+	implementation "io.github.openfeign:feign-jackson:${feignJacksonVersion}"
+	implementation "org.openapitools:jackson-databind-nullable:${openapitoolsVersion}"
+
 	testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
 	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
@@ -74,9 +84,29 @@ dependencies {
 dependencyManagement {
 	imports {
 		mavenBom "com.vaadin:vaadin-bom:${vaadinVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
 	}
 }
 
 tasks.named("test") {
 	useJUnitPlatform()
+}
+
+allprojects {
+	afterEvaluate {
+		if (project.plugins.hasPlugin('java')) {
+			project.apply plugin: 'com.diffplug.spotless'
+
+			project.spotless {
+				java {
+					googleJavaFormat()
+					target 'src/**/*.java'
+				}
+			}
+
+			tasks.named('spotlessJava') {
+				dependsOn tasks.named('vaadinPrepareFrontend')
+			}
+		}
+	}
 }

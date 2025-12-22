@@ -1,14 +1,14 @@
 package ru.marakogr.instanal.db.model;
-import jakarta.persistence.*;
-import lombok.*;
 
+import jakarta.persistence.*;
 import java.time.LocalDate;
+import lombok.*;
 
 @Entity
 @Table(
-        name = "messages",
-        uniqueConstraints = @UniqueConstraint(name = "uq_messages_primary_mid", columnNames = "primary_mid")
-)
+    name = "messages",
+    uniqueConstraints =
+        @UniqueConstraint(name = "uq_messages_primary_mid", columnNames = "primary_mid"))
 @Getter
 @Setter
 @Builder
@@ -16,81 +16,84 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class MessageEntity {
 
-    @Id
-    @Column(name = "primary_mid", nullable = false, updatable = false)
-    private String primaryMid;
+  @Id
+  @Column(name = "primary_mid", nullable = false, updatable = false)
+  private String primaryMid;
 
-    private long timestamp;
+  private long timestamp;
 
-    /* -------- UpsertMessage -------- */
+  /* -------- UpsertMessage -------- */
 
-    @Column(name = "upsert_mid")
-    private String upsertMid;
+  @Column(name = "upsert_mid")
+  private String upsertMid;
 
-    @Column(name = "sender_id")
-    private String senderId;
+  @Column(name = "chat_id")
+  private String chatId;
 
-    @Column(name = "sender_name")
-    private String senderName;
+  @Column(name = "sender_id")
+  private String senderId;
 
-    @Column(name = "upsert_timestamp")
-    private Long upsertTimestamp;
+  @Column(name = "sender_name")
+  private String senderName;
 
-    @Column(name = "text", columnDefinition = "text")
-    private String text;
+  @Column(name = "upsert_timestamp")
+  private Long upsertTimestamp;
 
-    @Column(name = "upsert_date")
-    private LocalDate upsertDate;
+  @Column(name = "text", columnDefinition = "text")
+  private String text;
 
-    /* -------- XMA -------- */
+  @Column(name = "upsert_date")
+  private LocalDate upsertDate;
 
-    @Column(name = "attachment_id")
-    private String attachmentId;
+  /* -------- XMA -------- */
 
-    @Column(name = "preview_small", columnDefinition = "text")
-    private String previewSmall;
+  @Column(name = "attachment_id")
+  private String attachmentId;
 
-    @Column(name = "preview_large", columnDefinition = "text")
-    private String previewLarge;
+  @Column(name = "preview_small", columnDefinition = "text")
+  private String previewSmall;
 
-    @Column(name = "video_title", length = 512)
-    private String videoTitle;
+  @Column(name = "preview_large", columnDefinition = "text")
+  private String previewLarge;
 
-    @Column(name = "video_description", columnDefinition = "text")
-    private String videoDescription;
+  @Column(name = "video_title", length = 512)
+  private String videoTitle;
 
-    @Column(name = "video_author")
-    private String videoAuthor;
+  @Column(name = "video_description", columnDefinition = "text")
+  private String videoDescription;
 
-    /* -------- CTA / Item -------- */
+  @Column(name = "video_author")
+  private String videoAuthor;
 
-    @Column(name = "cta_url")
-    private String ctaUrl;
+  /* -------- CTA / Item -------- */
 
-    @Column(name = "object_id")
-    private String objectId;
+  @Column(name = "cta_url")
+  private String ctaUrl;
 
-    /* -------- Reaction -------- */
+  @Column(name = "object_id")
+  private String objectId;
 
-    @Column(name = "reaction_sender_id")
-    private String reactionSenderId;
+  /* -------- Reaction -------- */
 
-    @Column(name = "reaction_sender_name")
-    private String reactionSenderName;
+  @Column(name = "reaction_sender_id")
+  private String reactionSenderId;
 
-    private String reaction;
+  @Column(name = "reaction_sender_name")
+  private String reactionSenderName;
 
-    @Column(name = "reaction_timestamp")
-    private Long reactionTimestamp;
+  private String reaction;
 
-    @Column(name = "reaction_date")
-    private LocalDate reactionDate;
+  @Column(name = "reaction_timestamp")
+  private Long reactionTimestamp;
 
-    /* -------- Aggregation helpers -------- */
+  @Column(name = "reaction_date")
+  private LocalDate reactionDate;
 
-    @Column(name = "has_reaction", nullable = false)
-    private boolean hasReaction;
+  /* -------- Aggregation helpers -------- */
 
-    @Column(name = "has_reel", nullable = false)
-    private boolean hasReel;
+  @Column(name = "has_reaction", nullable = false)
+  private boolean hasReaction;
+
+  @Column(name = "has_reel", nullable = false)
+  private boolean hasReel;
 }

@@ -10,33 +10,31 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
-        name = "super_user",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "instagram"),
-                @UniqueConstraint(columnNames = "instagram_id")
-        }
-)
+    name = "super_user",
+    uniqueConstraints = {
+      @UniqueConstraint(columnNames = "instagram"),
+      @UniqueConstraint(columnNames = "instagram_id")
+    })
 public class SuperUser {
 
-    @Id
-    @SequenceGenerator(
-            name = "super_user_seq",
-            sequenceName = "super_user_id_seq",
-            allocationSize = 1
-    )
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "super_user_seq"
-    )
-    private Long id;
+  @Id
+  @SequenceGenerator(
+      name = "super_user_seq",
+      sequenceName = "super_user_id_seq",
+      allocationSize = 1)
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "super_user_seq")
+  private Long id;
 
-    private String name;
+  @Column(name = "superset_user_id", unique = true)
+  private Long supersetUserId;
 
-    @Column(nullable = false, unique = true)
-    private String instagram;
+  private String name;
 
-    @Column(name = "instagram_id", nullable = false, unique = true)
-    private String instagramId;
+  @Column(nullable = false, unique = true)
+  private String instagram;
 
-    private String telegram;
+  @Column(name = "instagram_id", nullable = false, unique = true)
+  private String instagramId;
+
+  private String telegram;
 }

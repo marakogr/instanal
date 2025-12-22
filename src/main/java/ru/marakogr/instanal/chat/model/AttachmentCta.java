@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AttachmentCta {
-    private String attachmentId;
-    private String url;
+  private String attachmentId;
+  private String url;
 }

@@ -1,21 +1,25 @@
 package ru.marakogr.instanal.db.repository;
 
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import ru.marakogr.instanal.db.model.MessageEntity;
 
-import java.util.List;
-
 public interface MessageRepository extends JpaRepository<MessageEntity, String> {
-    @Modifying
-    @Transactional
-    @Query(value = """
+  long countByHasReelTrueAndSenderId(String friendId);
+
+  @Modifying
+  @Transactional
+  @Query(
+      value =
+          """
             INSERT INTO messages (
                 primary_mid,
                 timestamp,
                 upsert_mid,
+                chat_id,
                 sender_id,
                 sender_name,
                 upsert_timestamp,
@@ -40,6 +44,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, String> 
                 :#{#e.primaryMid},
                 :#{#e.timestamp},
                 :#{#e.upsertMid},
+                :#{#e.chatId},
                 :#{#e.senderId},
                 :#{#e.senderName},
                 :#{#e.upsertTimestamp},
@@ -64,6 +69,7 @@ public interface MessageRepository extends JpaRepository<MessageEntity, String> 
             ON CONFLICT (primary_mid) DO UPDATE SET
                 timestamp = EXCLUDED.timestamp,
                 upsert_mid = EXCLUDED.upsert_mid,
+                chat_id = EXCLUDED.chat_id,
                 sender_id = EXCLUDED.sender_id,
                 sender_name = EXCLUDED.sender_name,
                 upsert_timestamp = EXCLUDED.upsert_timestamp,
@@ -84,13 +90,12 @@ public interface MessageRepository extends JpaRepository<MessageEntity, String> 
                 has_reel = EXCLUDED.has_reel,
                 has_reaction = EXCLUDED.has_reaction,
                 reaction_date = EXCLUDED.reaction_date
-            """, nativeQuery = true)
-    void upsert(MessageEntity e);
+            """,
+      nativeQuery = true)
+  void upsert(MessageEntity e);
 
-    long countByHasReelTrueAndSenderId(String friendId);
+  List<MessageEntity> findAllByHasReelTrueAndSenderId(String friendId);
 
-    List<MessageEntity> findAllByHasReelTrueAndSenderId(String friendId);
-
-    long countByHasReactionTrueAndReactionSenderIdAndPrimaryMidIn(String ownerId, List<String> friendReelsMids);
-
+  long countByHasReactionTrueAndReactionSenderIdAndPrimaryMidIn(
+      String ownerId, List<String> friendReelsMids);
 }

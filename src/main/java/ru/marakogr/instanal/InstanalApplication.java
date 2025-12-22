@@ -6,13 +6,15 @@ import com.vaadin.flow.theme.lumo.Lumo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @Theme(variant = Lumo.LIGHT)
+@EnableFeignClients
 @SpringBootApplication
-public class InstanalApplication extends SpringBootServletInitializer implements AppShellConfigurator {
+public class InstanalApplication extends SpringBootServletInitializer
+    implements AppShellConfigurator {
 
-	public static void main(String[] args) {
-		SpringApplication.run(InstanalApplication.class, args);
-	}
-
+  public static void main(String[] args) {
+    SpringApplication.run(InstanalApplication.class, args);
+  }
 }

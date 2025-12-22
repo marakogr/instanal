@@ -8,11 +8,11 @@ databaseChangeLog:
             replaceIfExists: true
             selectQuery: |
               SELECT
+                  m.chat_id,
                   su.id AS super_user_id,
                   su.name AS super_user_name,
                   upsert_date,
                   COUNT(*) FILTER (WHERE has_reel) AS reels_count
               FROM messages m
               JOIN super_user su ON su.instagram_id = m.sender_id
-              GROUP BY su.id, su.name, upsert_date
-              ORDER BY su.id, upsert_date;
+              GROUP BY m.chat_id, su.id, su.name, upsert_date;

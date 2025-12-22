@@ -14,6 +14,7 @@ databaseChangeLog:
                     nullable: false
               - column: { name: timestamp, type: BIGINT }
               - column: { name: upsert_mid, type: VARCHAR(255) }
+              - column: { name: chat_id, type: VARCHAR(255) }
               - column: { name: sender_id, type: VARCHAR(255) }
               - column: { name: sender_name, type: VARCHAR(255) }
               - column: { name: upsert_timestamp, type: BIGINT }

@@ -9,13 +9,13 @@ import ru.marakogr.instanal.db.model.SuperUser;
 
 @Route("")
 public class RootRedirectView extends VerticalLayout implements BeforeEnterObserver {
-    @Override
-    public void beforeEnter(BeforeEnterEvent event) {
-        SuperUser user = VaadinSession.getCurrent().getAttribute(SuperUser.class);
-        if (user == null) {
-            event.rerouteTo(LoginView.class);
-        } else {
-            event.rerouteTo("main");
-        }
+  @Override
+  public void beforeEnter(BeforeEnterEvent event) {
+    SuperUser user = VaadinSession.getCurrent().getAttribute(SuperUser.class);
+    if (user == null) {
+      event.rerouteTo(LoginView.class);
+    } else {
+      event.rerouteTo("main");
     }
+  }
 }

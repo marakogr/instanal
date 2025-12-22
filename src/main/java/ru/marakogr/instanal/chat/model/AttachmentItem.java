@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AttachmentItem {
-    private String attachmentId;
-    private String objectId;
+  private String attachmentId;
+  private String objectId;
 }

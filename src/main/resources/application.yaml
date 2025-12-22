@@ -30,3 +30,7 @@ logging:
   level:
     liquibase: INFO
 
+superset:
+  url: http://superset:8088
+  username: admin
+  password: admin

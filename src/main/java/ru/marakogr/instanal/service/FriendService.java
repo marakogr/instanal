@@ -1,58 +1,64 @@
 package ru.marakogr.instanal.service;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.db.model.SuperUser;
 import ru.marakogr.instanal.db.repository.FriendRelationRepository;
-import ru.marakogr.instanal.db.repository.SuperUserRepository;
-
-import java.util.List;
+import ru.marakogr.instanal.service.superset.dashboard.DashboardService;
 
 @Service
 @RequiredArgsConstructor
 public class FriendService {
-    private final FriendRelationRepository relationRepo;
-    private final SuperUserRepository userRepo;
+  private final FriendRelationRepository relationRepo;
+  private final SuperUserService superUserService;
+  private final DashboardService dashboardService;
 
-    @Transactional
-    public FriendRelation addFriend(SuperUser owner, String name, String instagram, String instagramId, String telegram) {
-        var friend = userRepo.findByInstagram(instagram)
-                .map(existing -> {
-                    existing.setName(name);
-                    existing.setInstagramId(instagramId); // теперь обязательное поле
-                    existing.setTelegram(telegram);
-                    return userRepo.save(existing);
-                })
-                .orElseGet(() -> {
-                    return userRepo.save(
-                            SuperUser.builder()
-                                    .name(name)
-                                    .instagram(instagram)
-                                    .instagramId(instagramId)
-                                    .telegram(telegram)
-                                    .build()
-                    );
-                });
+  @Transactional
+  public FriendRelation addFriend(
+      SuperUser owner, String name, String instagram, String instagramId, String telegram) {
+    var friend =
+        superUserService
+            .findByInstagram(instagram)
+            .orElseGet(() -> createUser(name, instagram, instagramId, telegram));
+    return addFriend(owner, friend);
+  }
 
-        var relation = new FriendRelation();
-        relation.setOwner(owner);
-        relation.setFriendSuperUser(friend);
-
-        return relationRepo.save(relation);
+  @Transactional
+  public FriendRelation addFriend(SuperUser owner, SuperUser friend) {
+    var relation = new FriendRelation();
+    relation.setOwner(owner);
+    relation.setFriendSuperUser(friend);
+    relationRepo.save(relation);
+    var invertRelation = relationRepo.findByOwnerAndFriendSuperUser(friend, owner);
+    if (invertRelation == null) {
+      dashboardService.createPersonalDashboard(relation);
+    } else {
+      relation.setMaxReelsByDayDatasetId(invertRelation.getMaxReelsByDayDatasetId());
+      relation.setDashboardSlug(invertRelation.getDashboardSlug());
     }
+    return relation;
+  }
 
-    public List<FriendRelation> getFriends(SuperUser superUser) {
-        return relationRepo.findByOwnerId(superUser.getId());
-    }
+  @Transactional(readOnly = true)
+  public List<FriendRelation> getFriends(SuperUser superUser) {
+    return relationRepo.findByOwnerId(superUser.getId());
+  }
 
-    public void updateRating(FriendRelation relation, double rating) {
-        relation.setRating(rating);
-        relationRepo.save(relation);
-    }
+  @Transactional
+  public void deleteFriend(FriendRelation friendRelation) {
+    relationRepo.delete(friendRelation);
+  }
 
-    public void deleteFriend(FriendRelation friendRelation) {
-        relationRepo.delete(friendRelation);
-    }
+  private SuperUser createUser(String name, String instagram, String instagramId, String telegram) {
+    return superUserService.createUser(
+        SuperUser.builder()
+            .name(name)
+            .instagram(instagram)
+            .instagramId(instagramId)
+            .telegram(telegram)
+            .build());
+  }
 }

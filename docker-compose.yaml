@@ -1,9 +1,6 @@
 version: "3.8"
 
 services:
-  # =========================
-  # PostgreSQL для приложения
-  # =========================
   postgres:
     image: postgres:16
     container_name: instanal-postgres
@@ -21,9 +18,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # =========================
-  # Твоё приложение
-  # =========================
   instanal:
     container_name: instanal-app
     build: .
@@ -40,9 +34,6 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
 
-  # =========================
-  # PostgreSQL для Superset
-  # =========================
   superset-db:
     image: postgres:14
     container_name: superset-db
@@ -57,17 +48,12 @@ services:
       interval: 5s
       retries: 5
 
-  # =========================
-  # Apache Superset
-  # =========================
   superset:
     image: apache/superset:3.1.0
     container_name: superset
     restart: unless-stopped
     depends_on:
       superset-db:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
     ports:
       - "8088:8088"
@@ -79,6 +65,7 @@ services:
       SUPERSET_ENV: production
     volumes:
       - superset_home:/app/superset_home
+      - ./superset_config.py:/app/pythonpath/superset_config.py
     command: >
       gunicorn
       --workers 4
