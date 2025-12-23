@@ -6,10 +6,7 @@ import feign.RequestLine;
 import javax.annotation.Nullable;
 import org.springframework.web.bind.annotation.RequestBody;
 import ru.marakogr.instanal.integration.superset.client.ApiClient;
-import ru.marakogr.instanal.integration.superset.model.ApiResponse;
-import ru.marakogr.instanal.integration.superset.model.GetListSchema;
-import ru.marakogr.instanal.integration.superset.model.IdWrapper;
-import ru.marakogr.instanal.integration.superset.model.UserPostRequest;
+import ru.marakogr.instanal.integration.superset.model.*;
 
 public interface UsersApi extends ApiClient.Api {
 
@@ -19,10 +16,9 @@ public interface UsersApi extends ApiClient.Api {
   })
   ApiResponse<IdWrapper> apiV1UserPost(@RequestBody UserPostRequest userPostRequest);
 
-  @RequestLine("GET /api/v1/security/users/{supersetUserId}/?q={q}")
+  @RequestLine("GET /api/v1/security/users/?q={q}")
   @Headers({
     "Accept: application/json",
   })
-  ApiResponse<IdWrapper> apiV1UserByIdGet(
-      Long supersetUserId, @Param("q") @Nullable GetListSchema q);
+  ApiResponse<IdArrayWrapper> apiV1UsersGet(@Param("q") @Nullable GetListSchema q);
 }

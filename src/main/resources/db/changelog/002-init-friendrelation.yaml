@@ -13,12 +13,6 @@ databaseChangeLog:
                   constraints:
                     primaryKey: true
               - column:
-                  name: max_reels_by_day_dataset_id
-                  type: BIGINT
-              - column:
-                  name: dashboard_slug
-                  type: VARCHAR(255)
-              - column:
                   name: owner_id
                   type: BIGINT
                   constraints:

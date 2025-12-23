@@ -31,7 +31,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     setAlignItems(Alignment.CENTER);
     setJustifyContentMode(JustifyContentMode.CENTER);
 
-    // Карточка контейнера
     var card = new VerticalLayout();
     card.setWidth("400px");
     card.setPadding(true);
@@ -40,7 +39,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     card.getStyle().set("border-radius", "12px");
     card.getStyle().set("box-shadow", "0 4px 12px rgba(0,0,0,0.1)");
 
-    var title = new H2("Дружбометр");
+    var title = new H2("Instanal");
     title.getStyle().set("margin-bottom", "20px");
     card.add(title);
 
@@ -51,17 +50,17 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     var instagram = new TextField("Instagram");
     instagram.setWidthFull();
-    var name = new TextField("Имя");
+    var name = new TextField("Name");
     name.setWidthFull();
     var instagramId = new TextField("Instagram ID");
     instagramId.setWidthFull();
     var telegram = new TextField("Telegram");
     telegram.setWidthFull();
 
-    var submit = new Button("Войти");
+    var submit = new Button("Login");
     submit.setWidthFull();
     submit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-    var switchMode = new Button("Создать аккаунт");
+    var switchMode = new Button("Create account");
     switchMode.setWidthFull();
     switchMode.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
@@ -72,11 +71,11 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     var binder = new Binder<>(SuperUser.class);
     binder
         .forField(instagram)
-        .asRequired("Обязательно")
+        .asRequired("Required")
         .bind(SuperUser::getInstagram, SuperUser::setInstagram);
     binder
         .forField(instagramId)
-        .asRequired("Обязательно")
+        .asRequired("Required")
         .bind(SuperUser::getInstagramId, SuperUser::setInstagramId);
     binder.forField(name).bind(SuperUser::getName, SuperUser::setName);
     binder.forField(telegram).bind(SuperUser::getTelegram, SuperUser::setTelegram);
@@ -93,15 +92,15 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             name.setVisible(true);
             instagramId.setVisible(true);
             telegram.setVisible(true);
-            switchMode.setText("Уже есть аккаунт? Войти");
-            submit.setText("Зарегистрироваться");
+            switchMode.setText("Already have an account? Sign in");
+            submit.setText("Sign up");
           } else {
             currentMode[0] = Mode.LOGIN;
             name.setVisible(false);
             instagramId.setVisible(false);
             telegram.setVisible(false);
-            switchMode.setText("Создать аккаунт");
-            submit.setText("Войти");
+            switchMode.setText("Sign up");
+            submit.setText("Sign in");
           }
         });
 
@@ -159,7 +158,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
   public void beforeEnter(BeforeEnterEvent event) {
     SuperUser user = VaadinSession.getCurrent().getAttribute(SuperUser.class);
     if (user != null) {
-      // если уже залогинен — редирект на /main
       event.rerouteTo("main");
     }
   }

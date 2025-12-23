@@ -9,8 +9,6 @@ import ru.marakogr.instanal.chat.Constants;
 import ru.marakogr.instanal.db.model.FriendRelation;
 
 public class Utils {
-  public static final long MESSAGES_DATASET_ID = 1L;
-  public static final long AVERAGE_DATASET_ID = 2L;
 
   public static String getChatId(String ownerId, String friendId) {
     return Stream.of(ownerId, friendId).sorted().collect(Collectors.joining("_"));

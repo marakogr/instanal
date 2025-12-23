@@ -1,7 +1,5 @@
 package ru.marakogr.instanal.service.superset.chart.impl;
 
-import static ru.marakogr.instanal.Utils.AVERAGE_DATASET_ID;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.List;
@@ -11,11 +9,10 @@ import ru.marakogr.instanal.Utils;
 import ru.marakogr.instanal.chat.Constants;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
-import ru.marakogr.instanal.integration.superset.model.DatasetInfo;
-import ru.marakogr.instanal.service.superset.chart.AbstractChart;
+import ru.marakogr.instanal.service.superset.chart.AbstractChartProvider;
 
 @Component
-public class MaxReelsPerDayBySenderChart extends AbstractChart {
+public class MaxReelsPerDayBySenderChart extends AbstractChartProvider {
 
   protected MaxReelsPerDayBySenderChart(SupersetService supersetService) {
     super(supersetService);
@@ -110,7 +107,7 @@ public class MaxReelsPerDayBySenderChart extends AbstractChart {
   }
 
   @Override
-  protected Long datasetId(List<DatasetInfo> datasets, FriendRelation relation) {
-    return AVERAGE_DATASET_ID;
+  public String datasetName() {
+    return "average_reels_per_day";
   }
 }

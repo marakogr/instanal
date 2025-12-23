@@ -54,7 +54,8 @@ public class SuperUserService {
 
   @Transactional
   public SuperUser createUser(SuperUser user) {
-    supersetUsersService.createSupersetUser(user).ifPresent(user::setSupersetUserId);
+    var supersetId = supersetUsersService.getOrCreate(user);
+    user.setSupersetUserId(supersetId);
     user = repository.save(user);
     return user;
   }

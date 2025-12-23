@@ -1,7 +1,5 @@
 package ru.marakogr.instanal.service.superset.chart.impl;
 
-import static ru.marakogr.instanal.Utils.MESSAGES_DATASET_ID;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.List;
@@ -11,11 +9,10 @@ import ru.marakogr.instanal.Utils;
 import ru.marakogr.instanal.chat.Constants;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
-import ru.marakogr.instanal.integration.superset.model.DatasetInfo;
-import ru.marakogr.instanal.service.superset.chart.AbstractChart;
+import ru.marakogr.instanal.service.superset.chart.AbstractChartProvider;
 
 @Component
-public class ReactionsDistributionForOwnerChart extends AbstractChart {
+public class ReactionsDistributionForOwnerChart extends AbstractChartProvider {
 
   protected ReactionsDistributionForOwnerChart(SupersetService supersetService) {
     super(supersetService);
@@ -128,12 +125,12 @@ public class ReactionsDistributionForOwnerChart extends AbstractChart {
   }
 
   @Override
-  protected Long datasetId(List<DatasetInfo> datasets, FriendRelation relation) {
-    return MESSAGES_DATASET_ID;
+  public int order() {
+    return 4;
   }
 
   @Override
-  public int order() {
-    return 4;
+  public String datasetName() {
+    return "messages";
   }
 }

@@ -59,7 +59,6 @@ public class WebsocketInstagramDirectParser {
                   }
                 } catch (Exception ignored) {
                   log.error("Error during parsing har file", ignored);
-                  // не важно
                 }
               }
             }
@@ -139,9 +138,6 @@ public class WebsocketInstagramDirectParser {
     }
   }
 
-  // ======================================================================
-  // 1. upsertMessage — основное сообщение
-  // ======================================================================
   private void handleUpsertMessage(JsonNode p) {
     var mid = getString(p, 10);
     if (!mid.isEmpty()) {
@@ -156,7 +152,6 @@ public class WebsocketInstagramDirectParser {
       upsertMessage.setTimestamp(timestamp);
       var date = LocalDate.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault());
       upsertMessage.setDate(date);
-      // Обычно текст под 3 индексом
       for (int i = 2; i < 10; i++) {
         var s = getString(p, i);
         if (!s.startsWith("mid.$") && !s.matches("\\d+") && !s.isEmpty()) {
@@ -262,9 +257,8 @@ public class WebsocketInstagramDirectParser {
         var encoded = matcher.group(1);
         return URLDecoder.decode(encoded, StandardCharsets.UTF_8);
       }
-    } catch (Exception ignored) {
-      log.error("Error during direct reel url extraction", ignored);
-      // не важно
+    } catch (Exception exception) {
+      log.error("Error during direct reel url extraction", exception);
     }
     return facebookUrl;
   }

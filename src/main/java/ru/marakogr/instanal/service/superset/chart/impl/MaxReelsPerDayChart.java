@@ -1,21 +1,17 @@
 package ru.marakogr.instanal.service.superset.chart.impl;
 
-import static ru.marakogr.instanal.Utils.getChatId;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.springframework.stereotype.Component;
 import ru.marakogr.instanal.chat.Constants;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
-import ru.marakogr.instanal.integration.superset.model.DatasetInfo;
-import ru.marakogr.instanal.service.superset.chart.AbstractChart;
+import ru.marakogr.instanal.service.superset.chart.AbstractChartProvider;
 
 @Component
-public class MaxReelsPerDayChart extends AbstractChart {
+public class MaxReelsPerDayChart extends AbstractChartProvider {
 
   protected MaxReelsPerDayChart(SupersetService supersetService) {
     super(supersetService);
@@ -71,7 +67,7 @@ public class MaxReelsPerDayChart extends AbstractChart {
 
   @Override
   protected String slice() {
-    return "Максимум Reels за рабочий день";
+    return "Max Reels for a day";
   }
 
   @Override
@@ -80,16 +76,7 @@ public class MaxReelsPerDayChart extends AbstractChart {
   }
 
   @Override
-  protected Long datasetId(List<DatasetInfo> datasets, FriendRelation relation) {
-    var datasetTableName = getDataSetTableName(relation);
-    return datasets.stream()
-        .filter(d -> Objects.equals(datasetTableName, d.getTableName()))
-        .map(DatasetInfo::getId)
-        .findFirst()
-        .orElseThrow(() -> new RuntimeException("unable to find dataset for chart"));
-  }
-
-  private String getDataSetTableName(FriendRelation relation) {
-    return "max_reels_by_day_" + getChatId(relation);
+  public String datasetName() {
+    return "max_reels_by_day";
   }
 }

@@ -20,7 +20,5 @@ public class FriendRelation {
 
   @ManyToOne private SuperUser owner;
   @ManyToOne private SuperUser friendSuperUser;
-  private Long maxReelsByDayDatasetId;
-  private String dashboardSlug;
   private double rating = 0.0;
 }

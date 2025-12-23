@@ -1,20 +1,22 @@
 package ru.marakogr.instanal.service.superset.chart.impl;
 
-import static ru.marakogr.instanal.Utils.MESSAGES_DATASET_ID;
 import static ru.marakogr.instanal.Utils.getChatId;
 
-import java.util.List;
 import org.springframework.stereotype.Component;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
-import ru.marakogr.instanal.integration.superset.model.DatasetInfo;
-import ru.marakogr.instanal.service.superset.chart.AbstractChart;
+import ru.marakogr.instanal.service.superset.chart.AbstractChartProvider;
 
 @Component
-public class ReelsReactionWeeklyChart extends AbstractChart {
+public class ReelsReactionWeeklyChart extends AbstractChartProvider {
   @Override
   public int order() {
     return 3;
+  }
+
+  @Override
+  public String datasetName() {
+    return "messages";
   }
 
   public ReelsReactionWeeklyChart(SupersetService supersetService) {
@@ -34,11 +36,6 @@ public class ReelsReactionWeeklyChart extends AbstractChart {
   @Override
   protected String vizTyp() {
     return "echarts_area";
-  }
-
-  @Override
-  protected Long datasetId(List<DatasetInfo> datasets, FriendRelation relation) {
-    return MESSAGES_DATASET_ID;
   }
 
   @Override

@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
@@ -27,34 +28,37 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.UploadHandler;
 import java.io.ByteArrayOutputStream;
-import java.util.*;
 import java.util.stream.Collectors;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.db.model.SuperUser;
-import ru.marakogr.instanal.integration.superset.SupersetService;
 import ru.marakogr.instanal.service.AnalysisService;
 import ru.marakogr.instanal.service.ChatService;
 import ru.marakogr.instanal.service.FriendService;
 import ru.marakogr.instanal.service.SuperUserService;
+import ru.marakogr.instanal.service.superset.chart.ChartService;
+import ru.marakogr.instanal.service.superset.dashboard.DashboardService;
 
 @Route("main")
 public class MainView extends VerticalLayout implements BeforeEnterObserver {
   private final FriendService friendService;
   private final ChatService chatService;
-  private final SupersetService supersetService;
   private final Grid<FriendRelation> grid = new Grid<>(FriendRelation.class, false);
   private final SuperUserService superUserService;
+  private final DashboardService dashboardService;
+  private final ChartService chartService;
 
   public MainView(
       FriendService friendService,
       ChatService chatService,
       AnalysisService analysisService,
-      SupersetService supersetService,
-      SuperUserService superUserService) {
+      SuperUserService superUserService,
+      DashboardService dashboardService,
+      ChartService chartService) {
     this.friendService = friendService;
     this.chatService = chatService;
-    this.supersetService = supersetService;
     this.superUserService = superUserService;
+    this.dashboardService = dashboardService;
+    this.chartService = chartService;
 
     var user = VaadinSession.getCurrent().getAttribute(SuperUser.class);
     if (user == null) {
@@ -65,46 +69,46 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
 
     var card = new VerticalLayout();
 
-    // Хлебные крошки
     var breadcrumbs = new HorizontalLayout();
     breadcrumbs.setSpacing(true);
-    var homeCrumb = Utils.createBreadcrumb("Главная");
+    var homeCrumb = Utils.createBreadcrumb("Main page");
     homeCrumb.addClickListener(e -> getUI().ifPresent(ui -> ui.navigate(MainView.class)));
     breadcrumbs.add(homeCrumb);
     card.add(breadcrumbs);
 
-    // Панель действий
     var actions = new HorizontalLayout();
     actions.setWidthFull();
     actions.setSpacing(true);
     actions.setAlignItems(Alignment.CENTER);
 
-    var addFriendBtn = new Button("Добавить друга", e -> openAddFriendDialog(user));
+    var addFriendBtn = new Button("Add friend", e -> openAddFriendDialog(user));
     addFriendBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-    var actionDropdownBtn = new Button("Действия ▼");
+    var actionDropdownBtn = new Button("Actions ▼");
     actionDropdownBtn.addThemeVariants(ButtonVariant.LUMO_CONTRAST);
 
     var actionMenu = new ContextMenu(actionDropdownBtn);
     actionMenu.setOpenOnClick(true);
 
-    // Добавляем пункты меню
-    actionMenu.addItem("Удалить выбранных", e -> deleteSelectedFriends());
-    actionMenu.addItem("Импорт чата", e -> importChatSelected());
-    actionMenu.addItem("Анализ в Superset", e -> analyzeSelectedSuperset());
+    actionMenu.addItem("Remove selected", e -> deleteSelectedFriends());
+    actionMenu.addItem("Chat import", e -> importChatSelected());
     actionMenu.addItem(
-        "Рейтинг друзей", e -> calculateRating(friendService, analysisService, user));
+        "Friends rating", e -> calculateRating(friendService, analysisService, user));
+
+    var analyticsItem = actionMenu.addItem("Analytics ▼");
+    var analyticsSubMenu = analyticsItem.getSubMenu();
+
+    analyticsSubMenu.addItem("Dashboards", e -> openDashboardsDialog());
+
     actions.add(addFriendBtn, actionDropdownBtn);
     card.add(actions);
 
-    // Грид
     grid.setWidthFull();
-    grid.addColumn(relation -> relation.getFriendSuperUser().getName()).setHeader("Имя");
-    grid.addColumn(relation -> relation.getFriendSuperUser().getInstagram()).setHeader("Инста");
+    grid.addColumn(relation -> relation.getFriendSuperUser().getName()).setHeader("Name");
+    grid.addColumn(relation -> relation.getFriendSuperUser().getInstagram()).setHeader("Instagram");
 
-    // Красивое отображение рейтинга (звёздочки + число)
     grid.addComponentColumn(this::createRatingComponent)
-        .setHeader("Рейтинг")
+        .setHeader("Rating")
         .setSortable(true)
         .setComparator(FriendRelation::getRating);
 
@@ -116,7 +120,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
 
     var logoutBtn =
         new Button(
-            "Выйти",
+            "Logout",
             e -> {
               VaadinSession.getCurrent().close();
               UI.getCurrent().getPage().executeJs("localStorage.removeItem('superUserInstagram');");
@@ -126,20 +130,82 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     actions.add(logoutBtn);
   }
 
+  private void openDashboardsDialog() {
+    var selected = grid.getSelectedItems();
+    if (selected.size() != 1) {
+      Notification.show("Select one friend");
+      return;
+    }
+    var relation = selected.iterator().next();
+    var dialog = new Dialog();
+    dialog.setHeaderTitle("Dashboards");
+    var content = new VerticalLayout();
+    var createBtn =
+        new Button("Create dashboard", e -> openCreateDashboardDialog(relation, dialog));
+    createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+    content.add(createBtn, new Hr());
+
+    dashboardService
+        .findByRelation(relation)
+        .forEach(
+            dashboard -> {
+              var open =
+                  new Button(
+                      dashboard.getTitle(),
+                      e ->
+                          UI.getCurrent()
+                              .getPage()
+                              .executeJs(
+                                  "window.open($0,'_blank')",
+                                  dashboardService.generateGuestLink(relation, dashboard)));
+              open.setWidthFull();
+              content.add(open);
+            });
+
+    dialog.add(content);
+    dialog.open();
+  }
+
+  private void openCreateDashboardDialog(FriendRelation relation, Dialog parent) {
+    var dialog = new Dialog();
+    dialog.setHeaderTitle("Create dashboard");
+    var name = new TextField("title");
+    name.setRequired(true);
+    MultiSelectComboBox<String> charts = new MultiSelectComboBox<>("Charts");
+    charts.setItems(chartService.getPossibleCharts());
+    var create =
+        new Button(
+            "Create",
+            e -> {
+              if (name.isEmpty()) {
+                name.setInvalid(true);
+                return;
+              }
+              var dashboard =
+                  dashboardService.createDashboard(
+                      relation, name.getValue(), charts.getSelectedItems().stream().toList());
+              UI.getCurrent()
+                  .getPage()
+                  .executeJs(
+                      "window.open($0,'_blank')",
+                      dashboardService.generateGuestLink(relation, dashboard));
+              dialog.close();
+              parent.close();
+            });
+    create.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+    dialog.add(new VerticalLayout(name, charts, create));
+    dialog.open();
+  }
+
   private void calculateRating(
       FriendService friendService, AnalysisService analysisService, SuperUser user) {
-    // Показываем прогресс или уведомление
-    Notification notification = new Notification("Расчёт рейтинга запущен...", 3000);
+    var notification = new Notification("Rating calculation started...", 3000);
     notification.setPosition(Notification.Position.MIDDLE);
     notification.open();
-
-    // Запускаем анализ
     analysisService.analyzeAllFriends(user);
-
-    // Обновляем грид
     grid.setItems(friendService.getFriends(user));
-
-    Notification success = new Notification("Рейтинг друзей обновлён!", 3000);
+    var success = new Notification("Done!", 3000);
     success.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     success.setPosition(Notification.Position.MIDDLE);
     success.open();
@@ -183,51 +249,25 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     selected.forEach(friendService::deleteFriend);
     grid.setItems(
         friendService.getFriends(VaadinSession.getCurrent().getAttribute(SuperUser.class)));
-    Notification.show("Друзья удалены", 2000, Notification.Position.TOP_CENTER);
+    Notification.show("Friends removed", 2000, Notification.Position.TOP_CENTER);
   }
 
   private void importChatSelected() {
     var selected = grid.getSelectedItems();
     if (selected.isEmpty()) {
-      Notification.show("Выберите друга", 3000, Notification.Position.MIDDLE);
+      Notification.show("Select friend", 3000, Notification.Position.MIDDLE);
       return;
     }
     if (selected.size() > 1) {
-      Notification.show(
-          "Можно выбрать только одного друга за раз", 3000, Notification.Position.MIDDLE);
+      Notification.show("You can select only one friend", 3000, Notification.Position.MIDDLE);
       return;
     }
     grid.getSelectedItems().forEach(this::openImportDialog);
   }
 
-  private void analyzeSelectedSuperset() {
-    var selected = grid.getSelectedItems();
-
-    if (selected.isEmpty()) {
-      Notification.show("Выберите хотя бы одного друга", 3000, Notification.Position.MIDDLE);
-      return;
-    }
-
-    selected.forEach(
-        relation -> {
-          String guestLink = supersetService.generateGuestLink(relation);
-
-          getUI()
-              .ifPresent(
-                  ui -> {
-                    ui.getPage().executeJs("window.open($0, '_blank');", guestLink);
-                  });
-        });
-
-    Notification.show(
-        "Открыто " + selected.size() + " дашборд(ов) в новых вкладках",
-        3000,
-        Notification.Position.MIDDLE);
-  }
-
   private void openAddFriendDialog(SuperUser superUser) {
     var dialog = new Dialog();
-    dialog.setHeaderTitle("Добавить друга");
+    dialog.setHeaderTitle("Add friend");
     dialog.setWidth("500px");
     dialog.setMaxWidth("90vw");
 
@@ -235,13 +275,13 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     content.setSpacing(true);
     content.setPadding(false);
 
-    var instagramField = new TextField("Instagram ник");
-    instagramField.setPlaceholder("@username или username");
+    var instagramField = new TextField("Instagram nickname");
+    instagramField.setPlaceholder("@username or username");
     instagramField.setWidthFull();
 
     var searchBtn =
         new Button(
-            "Найти",
+            "Search",
             e -> performSearch(superUser, instagramField.getValue().trim(), content, dialog));
     searchBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -249,7 +289,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     searchLayout.setWidthFull();
     searchLayout.expand(instagramField);
 
-    content.add(new H3("Поиск друга по Instagram"), searchLayout);
+    content.add(new H3("Search friend by Instagram"), searchLayout);
 
     dialog.add(content);
     dialog.open();
@@ -258,7 +298,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
   private void performSearch(
       SuperUser superUser, String searchQuery, VerticalLayout content, Dialog dialog) {
     if (searchQuery.isBlank()) {
-      Notification.show("Введите ник Instagram", 3000, Notification.Position.MIDDLE);
+      Notification.show("Type Instagram nickname", 3000, Notification.Position.MIDDLE);
       return;
     }
 
@@ -270,12 +310,12 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
             .map(relation -> relation.getFriendSuperUser().getId())
             .collect(Collectors.toSet());
     content.removeAll();
-    content.add(new H3("Результат поиска по: @" + cleanQuery));
+    content.add(new H3("Search result for: @" + cleanQuery));
     if (allMatches.isEmpty()) {
-      content.add(new Paragraph("Пользователь с таким Instagram не найден."));
+      content.add(new Paragraph("Not found"));
       showCreateNewFriendForm(superUser, cleanQuery, content, dialog);
     } else {
-      content.add(new Paragraph("Найдено пользователей: " + allMatches.size()));
+      content.add(new Paragraph(allMatches.size() + " users were found"));
       var list = new VerticalLayout();
       list.setSpacing(true);
       for (var user : allMatches) {
@@ -287,20 +327,20 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
         nameSpan.getStyle().set("font-weight", "bold");
         var statusSpan = new Span();
         if (isAlreadyFriend) {
-          statusSpan.setText("Уже в друзьях");
+          statusSpan.setText("already in friends");
           statusSpan.getElement().getThemeList().add("badge error");
         } else {
-          statusSpan.setText("Можно добавить");
+          statusSpan.setText("can be added");
           statusSpan.getElement().getThemeList().add("badge success");
         }
         var addBtn =
             new Button(
-                "Добавить",
+                "Add",
                 e -> {
                   friendService.addFriend(superUser, user);
                   grid.setItems(friendService.getFriends(superUser));
                   dialog.close();
-                  Notification.show("Друг добавлен!", 3000, Notification.Position.MIDDLE);
+                  Notification.show("Done!", 3000, Notification.Position.MIDDLE);
                 });
         addBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_PRIMARY);
         if (isAlreadyFriend) {
@@ -316,7 +356,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     }
     var createNewBtn =
         new Button(
-            "Создать нового с ником @" + cleanQuery,
+            "Create new with nickname @" + cleanQuery,
             e -> {
               content.removeAll();
               showCreateNewFriendForm(superUser, cleanQuery, content, dialog);
@@ -327,10 +367,10 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
 
   private void showCreateNewFriendForm(
       SuperUser superUser, String prefillInstagram, VerticalLayout content, Dialog dialog) {
-    content.add(new H3("Создание нового друга"));
+    content.add(new H3("New friend creation"));
     var form = new FormLayout();
     form.setMaxWidth("400px");
-    var name = new TextField("Имя");
+    var name = new TextField("Name");
     var instagram = new TextField("Instagram");
     instagram.setValue(prefillInstagram);
     var instagramId = new TextField("Instagram ID");
@@ -338,7 +378,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     form.add(name, instagram, instagramId, telegram);
     var saveBtn =
         new Button(
-            "Создать и добавить",
+            "Create account and add to friends",
             e -> {
               friendService.addFriend(
                   superUser,
@@ -349,10 +389,10 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
               grid.setItems(friendService.getFriends(superUser));
               dialog.close();
               Notification.show(
-                  "Новый друг создан и добавлен!", 3000, Notification.Position.MIDDLE);
+                  "New account created and added to friends!", 3000, Notification.Position.MIDDLE);
             });
     saveBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-    var cancelBtn = new Button("Отмена", e -> dialog.close());
+    var cancelBtn = new Button("Cancel", e -> dialog.close());
     var buttons = new HorizontalLayout(saveBtn, cancelBtn);
     buttons.setWidthFull();
     content.add(form, buttons);
@@ -360,7 +400,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
 
   private void openImportDialog(FriendRelation relation) {
     Dialog dialog = new Dialog();
-    dialog.setHeaderTitle("Импорт HAR-файла для " + relation.getFriendSuperUser().getName());
+    dialog.setHeaderTitle("Import HAR-file for " + relation.getFriendSuperUser().getName());
 
     ProgressBar progress = new ProgressBar();
     progress.setIndeterminate(true);
@@ -391,7 +431,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
                             ui.access(
                                 () -> {
                                   Notification.show(
-                                      "Импорт завершён! Файл: " + event.getFileName(),
+                                      "Done! File: " + event.getFileName(),
                                       3000,
                                       Notification.Position.TOP_CENTER);
                                   progress.setVisible(false);
@@ -409,7 +449,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
                             ui.access(
                                 () -> {
                                   Notification.show(
-                                      "Ошибка импорта: " + ex.getMessage(),
+                                      "Import error: " + ex.getMessage(),
                                       5000,
                                       Notification.Position.TOP_END);
                                   progress.setVisible(false);

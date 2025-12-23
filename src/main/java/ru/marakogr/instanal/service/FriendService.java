@@ -7,14 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.db.model.SuperUser;
 import ru.marakogr.instanal.db.repository.FriendRelationRepository;
-import ru.marakogr.instanal.service.superset.dashboard.DashboardService;
 
 @Service
 @RequiredArgsConstructor
 public class FriendService {
   private final FriendRelationRepository relationRepo;
   private final SuperUserService superUserService;
-  private final DashboardService dashboardService;
 
   @Transactional
   public FriendRelation addFriend(
@@ -32,13 +30,6 @@ public class FriendService {
     relation.setOwner(owner);
     relation.setFriendSuperUser(friend);
     relationRepo.save(relation);
-    var invertRelation = relationRepo.findByOwnerAndFriendSuperUser(friend, owner);
-    if (invertRelation == null) {
-      dashboardService.createPersonalDashboard(relation);
-    } else {
-      relation.setMaxReelsByDayDatasetId(invertRelation.getMaxReelsByDayDatasetId());
-      relation.setDashboardSlug(invertRelation.getDashboardSlug());
-    }
     return relation;
   }
 

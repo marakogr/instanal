@@ -36,8 +36,8 @@ public class SupersetInitService {
   }
 
   private void createDatasets() {
-    createDataset("messages", "Основная таблица сообщений");
-    createDataset("average_reels_per_day", "Агрегированная таблица для средних и максимумов Reels");
+    createDataset("messages", "Main message table");
+    createDataset("average_reels_per_day", "Max and Avg Reels aggregation");
   }
 
   private void createDataset(String tableName, String description) {

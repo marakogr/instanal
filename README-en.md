@@ -14,7 +14,7 @@ analyzing conversation activity.
 
 - 📥 Import Instagram chat history (JSON)
 - 🧮 Calculation of activity, ratings, and communication metrics
-- 📊 Automatic dashboard creation in Apache Superset
+- 📊 Dashboard constructor for Apache Superset with predefined charts
 - 🐳 Fully containerized deployment via Docker
 - 📈 Ready-to-use PostgreSQL database for analytics
 

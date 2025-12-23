@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
-      id: 001-create-average-reels-view
-      author: yourname
+      id: 004
+      author: me
       changes:
         - createView:
             viewName: average_reels_per_day
