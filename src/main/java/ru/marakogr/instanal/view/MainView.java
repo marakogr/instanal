@@ -181,8 +181,23 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     to.setWidthFull();
 
     MultiSelectComboBox<String> charts = new MultiSelectComboBox<>("Charts");
-    charts.setItems(chartService.getPossibleCharts());
+    var possibleCharts = chartService.getPossibleCharts();
+    charts.setItems(possibleCharts);
     charts.setWidthFull();
+
+    var selectAllBtn = new Button("Select all", VaadinIcon.CHECK_SQUARE_O.create());
+    selectAllBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_CONTRAST);
+    selectAllBtn.addClickListener(e -> charts.select(possibleCharts));
+
+    var deselectAllBtn = new Button("Deselect all", VaadinIcon.SQUARE_SHADOW.create());
+    deselectAllBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_CONTRAST);
+    deselectAllBtn.addClickListener(e -> charts.deselectAll());
+
+    var chartsLayout = new HorizontalLayout(charts);
+    chartsLayout.setWidthFull();
+    chartsLayout.setAlignItems(Alignment.END);
+    chartsLayout.add(selectAllBtn, deselectAllBtn);
+    chartsLayout.expand(charts);
 
     var create =
         new Button(
@@ -190,6 +205,10 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
             e -> {
               if (name.isEmpty()) {
                 name.setInvalid(true);
+                return;
+              }
+              if (charts.getSelectedItems().isEmpty()) {
+                Notification.show("Select at least one chart", 3000, Notification.Position.MIDDLE);
                 return;
               }
               var context =
@@ -209,7 +228,8 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
               dialog.close();
             });
     create.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-    var layout = new VerticalLayout(name, new HorizontalLayout(from, to), charts, create);
+
+    var layout = new VerticalLayout(name, new HorizontalLayout(from, to), chartsLayout, create);
     layout.setWidthFull();
     dialog.add(layout);
     dialog.open();
