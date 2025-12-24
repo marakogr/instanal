@@ -11,8 +11,8 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import ru.marakogr.instanal.Utils;
 import ru.marakogr.instanal.chat.model.*;
+import ru.marakogr.instanal.utils.Utils;
 
 @Slf4j
 public class WebsocketInstagramDirectParser {

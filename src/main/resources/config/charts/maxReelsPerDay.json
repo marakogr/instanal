@@ -1,0 +1,7 @@
+{
+  "slice" : "Maximum number of reels per day",
+  "vizType" : "big_number_total",
+  "params" : "{\n  \"subheader_font_size\" : 0.15,\n  \"subheader\" : \"Reels for a day\",\n  \"time_format\" : \"smart_date\",\n  \"adhoc_filters\" : [ {\n    \"comparator\" : \"Last year\",\n    \"operator\" : \"TEMPORAL_RANGE\",\n    \"expressionType\" : \"SIMPLE\",\n    \"subject\" : \"upsert_date\",\n    \"clause\" : \"WHERE\"\n  } ],\n  \"metric\" : {\n    \"aggregate\" : \"MAX\",\n    \"column\" : {\n      \"column_name\" : \"total_reels_per_day\"\n    },\n    \"label\" : \"MAX(total_reels_per_day)\",\n    \"expressionType\" : \"SIMPLE\"\n  },\n  \"extra_form_data\" : { },\n  \"y_axis_format\" : \"SMART_NUMBER\",\n  \"conditional_formatting\" : [ ],\n  \"viz_type\" : \"big_number_total\",\n  \"header_font_size\" : 0.4\n}",
+  "description" : "Maximum number of reels per day",
+  "datasetName": "max_reels_by_day"
+}

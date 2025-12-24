@@ -8,7 +8,7 @@ public interface DashboardService {
 
   List<DashboardInfo> findByRelation(FriendRelation relation);
 
-  DashboardInfo createDashboard(FriendRelation relation, String name, List<String> chartIds);
+  DashboardInfo createDashboard(DashboardContext context);
 
   String generateGuestLink(FriendRelation friendRelation, DashboardInfo dashboard);
 }

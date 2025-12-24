@@ -1,16 +1,16 @@
 package ru.marakogr.instanal.service.superset.dataset;
 
-import static ru.marakogr.instanal.integration.superset.GetListSchemaDsl.singleFilter;
 import static ru.marakogr.instanal.integration.superset.model.FilterOperator.EQ;
+import static ru.marakogr.instanal.integration.superset.model.GetListSchemaDsl.singleFilter;
 
 import java.util.List;
 import java.util.Optional;
-import ru.marakogr.instanal.Utils;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
 import ru.marakogr.instanal.integration.superset.api.DatabaseApi;
 import ru.marakogr.instanal.integration.superset.api.DatasetApi;
 import ru.marakogr.instanal.integration.superset.model.*;
+import ru.marakogr.instanal.utils.Utils;
 
 public abstract class AbstractDatasetProvider implements DatasetProvider {
   private final DatabaseApi databaseApi;

@@ -1,0 +1,10 @@
+{
+  "slice" : "Distribution of reactions by type and owner",
+  "vizType" : "pie",
+  "params" : "{\n  \"outerRadius\" : 77,\n  \"show_total\" : true,\n  \"show_labels_threshold\" : 0.5,\n  \"show_legend\" : true,\n  \"label_type\" : \"key_percent\",\n  \"viz_type\" : \"pie\",\n  \"groupby\" : [ \"reaction_sender_name\", \"reaction\" ],\n  \"show_labels\" : true,\n  \"labels_outside\" : true,\n  \"legendType\" : \"scroll\",\n  \"legendOrientation\" : \"top\",\n  \"sort_by_metric\" : true,\n  \"adhoc_filters\" : [ {\n    \"operator\" : \"==\",\n    \"comparator\" : true,\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"has_reaction\",\n    \"operatorId\" : \"IS_TRUE\",\n    \"expressionType\" : \"SIMPLE\"\n  }, {\n    \"operator\" : \"==\",\n    \"comparator\" : true,\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"has_reel\",\n    \"operatorId\" : \"IS_TRUE\",\n    \"expressionType\" : \"SIMPLE\"\n  }, {\n    \"operator\" : \"IN\",\n    \"comparator\" : [ \"%{reaction_sender_name}\" ],\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"reaction_sender_name\",\n    \"operatorId\" : \"IN\",\n    \"expressionType\" : \"SIMPLE\"\n  }, {\n    \"comparator\" : \"Last year\",\n    \"operator\" : \"TEMPORAL_RANGE\",\n    \"expressionType\" : \"SIMPLE\",\n    \"subject\" : \"upsert_date\",\n    \"clause\" : \"WHERE\"\n  }, {\n    \"operator\" : \"==\",\n    \"comparator\" : \"%{chat_id}\",\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"chat_id\",\n    \"operatorId\" : \"EQUALS\",\n    \"expressionType\" : \"SIMPLE\"\n  } ],\n  \"label_line\" : true,\n  \"metric\" : {\n    \"aggregate\" : \"COUNT\",\n    \"column\" : {\n      \"column_name\" : \"reaction\"\n    },\n    \"label\" : \"COUNT(reaction)\",\n    \"expressionType\" : \"SIMPLE\"\n  },\n  \"row_limit\" : 100,\n  \"donut\" : true,\n  \"extra_form_data\" : { },\n  \"color_scheme\" : \"supersetColors\",\n  \"date_format\" : \"smart_date\",\n  \"innerRadius\" : 30,\n  \"number_format\" : \"SMART_NUMBER\"\n}",
+  "datasetName": "messages",
+  "description" : "Distribution of reactions by type and owner",
+  "paramsMapping": {
+    "reaction_sender_name": "relation.owner.name"
+  }
+}

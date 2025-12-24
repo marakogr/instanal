@@ -1,7 +1,7 @@
 package ru.marakogr.instanal.service.superset;
 
-import static ru.marakogr.instanal.integration.superset.GetListSchemaDsl.*;
 import static ru.marakogr.instanal.integration.superset.model.FilterOperator.EQ;
+import static ru.marakogr.instanal.integration.superset.model.GetListSchemaDsl.*;
 
 import java.util.List;
 import java.util.Optional;

@@ -8,4 +8,6 @@ public interface ChartInfo {
   String getSlice();
 
   List<Integer> getDashboardIds();
+
+  Long getDatasetId();
 }

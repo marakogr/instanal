@@ -1,9 +1,10 @@
 package ru.marakogr.instanal.service.superset.dashboard;
 
-import static ru.marakogr.instanal.Utils.array;
-import static ru.marakogr.instanal.Utils.object;
+import static ru.marakogr.instanal.utils.Utils.array;
+import static ru.marakogr.instanal.utils.Utils.object;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +13,6 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.marakogr.instanal.chat.Constants;
-import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
 import ru.marakogr.instanal.integration.superset.api.DashboardsApi;
 import ru.marakogr.instanal.integration.superset.model.ChartInfo;
@@ -27,24 +27,34 @@ public class DashboardBuilder {
   private final SupersetService supersetService;
   private final ChartService chartService;
 
-  public DashboardInfo build(FriendRelation relation, List<String> chartIds, String title) {
-    var charts = chartService.get(relation, chartIds);
+  public DashboardInfo build(DashboardContext context) {
+    var relation = context.relation();
+    var owner = relation.getOwner();
+    var friend = relation.getFriendSuperUser();
+    var owners = List.of(1L, owner.getSupersetUserId(), friend.getSupersetUserId());
+    context =
+        context.toBuilder()
+            .owners(owners)
+            .ownerId(owner.getInstagram())
+            .friendId(friend.getInstagram())
+            .build();
+    var charts = chartService.get(context);
+    context = context.toBuilder().charts(charts).build();
+    var dashboard = createDashboard(context);
+    chartService.addToDashboard(charts, dashboard.getId());
+    return dashboard;
+  }
+
+  private DashboardInfo createDashboard(DashboardContext context) {
+    var charts = context.charts();
+    var relation = context.relation();
+    var title = context.title();
     var owner = relation.getOwner();
     var friend = relation.getFriendSuperUser();
     var ownerName = owner.getInstagram();
     var friendName = friend.getInstagram();
     var owners = List.of(1L, owner.getSupersetUserId(), friend.getSupersetUserId());
-    var dashboard = createDashboard(title, ownerName, friendName, owners, charts);
-    chartService.addToDashboard(charts, dashboard.getId());
-    return dashboard;
-  }
 
-  private DashboardInfo createDashboard(
-      String title,
-      String ownerName,
-      String friendName,
-      List<Long> owners,
-      List<ChartInfo> charts) {
     var request =
         DashboardPostRequest.builder()
             .dashboardTitle(title + " for " + ownerName + " and " + friendName)
@@ -53,7 +63,7 @@ public class DashboardBuilder {
             .published(true)
             .css("")
             .positionJson(buildPositionJsonPerChartRow(charts, "Статистика чата"))
-            .jsonMetadata(buildJsonMetadata(charts))
+            .jsonMetadata(buildJsonMetadata(context))
             .build();
 
     var response = supersetService.getApi(DashboardsApi.class).apiV1DashboardPost(request);
@@ -61,7 +71,38 @@ public class DashboardBuilder {
     return data.getResult().toBuilder().id(data.getId()).build();
   }
 
-  public String buildJsonMetadata(List<ChartInfo> charts) {
+  private ObjectNode buildDateFilter(DashboardContext context) {
+    var mapper = Constants.OBJECT_MAPPER;
+    var chartsInScope = mapper.createArrayNode();
+    context.charts().forEach(chart -> chartsInScope.add(chart.getId()));
+    var targets = mapper.createArrayNode();
+    targets.add(mapper.createObjectNode()); // <-- {}
+    var timeRangeValue = context.supersetTimeRange();
+    return object(
+        "id", mapper.convertValue("NATIVE_FILTER-date_filter", JsonNode.class),
+        "type", mapper.convertValue("NATIVE_FILTER", JsonNode.class),
+        "name", mapper.convertValue("Date range", JsonNode.class),
+        "filterType",
+            mapper.convertValue("filter_time", JsonNode.class), // <-- как в рабочем примере
+        "targets", targets,
+        "defaultDataMask",
+            object(
+                "extraFormData",
+                    object("time_range", mapper.convertValue(timeRangeValue, JsonNode.class)),
+                "filterState",
+                    object("value", mapper.convertValue(timeRangeValue, JsonNode.class))),
+        "controlValues", object("enableEmptyFilter", true),
+        "cascadeParentIds", mapper.createArrayNode(),
+        "scope",
+            object(
+                "rootPath", array("ROOT_ID"),
+                "excluded", mapper.createArrayNode()),
+        "chartsInScope", chartsInScope,
+        "tabsInScope", mapper.createArrayNode(),
+        "description", mapper.convertValue("", JsonNode.class));
+  }
+
+  public String buildJsonMetadata(DashboardContext context) {
     var mapper = Constants.OBJECT_MAPPER;
     var root = mapper.createObjectNode();
 
@@ -77,20 +118,19 @@ public class DashboardBuilder {
     var chartConfig = mapper.createObjectNode();
     var chartsInScope = mapper.createArrayNode();
 
-    for (var chart : charts) {
+    for (var chart : context.charts()) {
       chartsInScope.add(chart.getId());
-
       chartConfig.set(
           String.valueOf(chart.getId()),
           object(
-              "id",
-              chart.getId(),
+              "id", mapper.convertValue(chart.getId(), JsonNode.class),
               "crossFilters",
-              object("scope", "global", "chartsInScope", mapper.createArrayNode())));
+                  object(
+                      "scope", mapper.convertValue("global", JsonNode.class),
+                      "chartsInScope", mapper.createArrayNode())));
     }
 
     root.set("chart_configuration", chartConfig);
-
     root.set(
         "global_chart_configuration",
         object(
@@ -100,6 +140,10 @@ public class DashboardBuilder {
                 "excluded", mapper.createArrayNode()),
             "chartsInScope",
             chartsInScope));
+
+    if (context.hasDateFilter()) {
+      root.putArray("native_filter_configuration").add(buildDateFilter(context));
+    }
 
     try {
       return mapper.writeValueAsString(root);

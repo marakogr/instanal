@@ -1,6 +1,6 @@
 package ru.marakogr.instanal.service.superset.dashboard;
 
-import static ru.marakogr.instanal.integration.superset.GetListSchemaDsl.singleFilter;
+import static ru.marakogr.instanal.integration.superset.model.GetListSchemaDsl.singleFilter;
 
 import java.util.*;
 import lombok.RequiredArgsConstructor;
@@ -48,11 +48,10 @@ public class DashboardServiceImpl implements DashboardService {
 
   @Override
   @Transactional
-  public DashboardInfo createDashboard(
-      FriendRelation relation, String title, List<String> chartIds) {
+  public DashboardInfo createDashboard(DashboardContext context) {
     Map<String, Set<String>> supersetToId = new HashMap<>();
     try {
-      var dashboard = dashboardBuilder.build(relation, chartIds, title);
+      var dashboard = dashboardBuilder.build(context);
       supersetToId
           .computeIfAbsent("dashboard", k -> new HashSet<>())
           .add(dashboard.getId().toString());

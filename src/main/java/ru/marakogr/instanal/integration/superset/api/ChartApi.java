@@ -14,7 +14,7 @@ public interface ChartApi extends ApiClient.Api {
   @Headers({
     "Content-Type: application/json",
   })
-  ApiResponse<ChartResponse> apiV1ChartPost(@RequestBody ChartPostRequest request);
+  ApiResponse<ChartCreateResponse> apiV1ChartPost(@RequestBody ChartPostRequest request);
 
   @RequestLine("PUT /api/v1/chart/{id}")
   @Headers({

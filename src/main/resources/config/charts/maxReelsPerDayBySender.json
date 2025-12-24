@@ -1,0 +1,7 @@
+{
+  "slice" : "Maximum reels per day grouped by sender",
+  "vizType" : "pie",
+  "params" : "{\n  \"outerRadius\" : 70,\n  \"show_total\" : true,\n  \"show_labels_threshold\" : 5,\n  \"show_legend\" : true,\n  \"label_type\" : \"key_value\",\n  \"viz_type\" : \"pie\",\n  \"groupby\" : [ \"super_user_name\" ],\n  \"show_labels\" : true,\n  \"labels_outside\" : true,\n  \"legendType\" : \"scroll\",\n  \"legendOrientation\" : \"top\",\n  \"sort_by_metric\" : true,\n  \"adhoc_filters\" : [ {\n    \"comparator\" : \"Last year\",\n    \"operator\" : \"TEMPORAL_RANGE\",\n    \"expressionType\" : \"SIMPLE\",\n    \"subject\" : \"upsert_date\",\n    \"clause\" : \"WHERE\"\n  }, {\n    \"operator\" : \"==\",\n    \"comparator\" : \"%{chat_id}\",\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"chat_id\",\n    \"operatorId\" : \"EQUALS\",\n    \"expressionType\" : \"SIMPLE\"\n  } ],\n  \"label_line\" : true,\n  \"metric\" : {\n    \"aggregate\" : \"MAX\",\n    \"column\" : {\n      \"column_name\" : \"reels_count\"\n    },\n    \"label\" : \"MAX(reels_count)\",\n    \"expressionType\" : \"SIMPLE\"\n  },\n  \"row_limit\" : 100,\n  \"donut\" : true,\n  \"extra_form_data\" : { },\n  \"color_scheme\" : \"supersetColors\",\n  \"date_format\" : \"smart_date\",\n  \"innerRadius\" : 30,\n  \"number_format\" : \"SMART_NUMBER\"\n}",
+  "description" : "Maximum reels per day grouped by sender",
+  "datasetName": "average_reels_per_day"
+}

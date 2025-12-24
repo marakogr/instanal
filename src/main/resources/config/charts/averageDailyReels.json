@@ -1,0 +1,7 @@
+{
+  "slice" : "Average daily Reels",
+  "vizType" : "pie",
+  "params" : "{\n  \"viz_type\" : \"pie\",\n  \"groupby\" : [ \"super_user_name\" ],\n  \"metric\" : {\n    \"aggregate\" : \"AVG\",\n    \"column\" : {\n      \"column_name\" : \"reels_count\"\n    },\n    \"label\" : \"AVG(reels_count)\",\n    \"expressionType\" : \"SIMPLE\"\n  },\n  \"adhoc_filters\" : [ {\n    \"comparator\" : \"Last year\",\n    \"operator\" : \"TEMPORAL_RANGE\",\n    \"expressionType\" : \"SIMPLE\",\n    \"subject\" : \"upsert_date\",\n    \"clause\" : \"WHERE\"\n  }, {\n    \"comparator\" : \"%{chat_id}\",\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"chat_id\",\n    \"operatorId\" : \"EQUALS\",\n    \"expressionType\" : \"SIMPLE\",\n    \"operator\" : \"==\"\n  } ],\n  \"row_limit\" : 100,\n  \"sort_by_metric\" : true,\n  \"color_scheme\" : \"supersetColors\",\n  \"show_legend\" : true,\n  \"legendType\" : \"scroll\",\n  \"legendOrientation\" : \"top\",\n  \"label_type\" : \"key_value\",\n  \"number_format\" : \"SMART_NUMBER\",\n  \"date_format\" : \"smart_date\",\n  \"show_labels\" : true,\n  \"labels_outside\" : true,\n  \"label_line\" : true,\n  \"show_labels_threshold\" : 5,\n  \"show_total\" : true,\n  \"donut\" : true,\n  \"outerRadius\" : 70,\n  \"innerRadius\" : 30,\n  \"extra_form_data\" : { }\n}",
+  "description" : "Average reels per day grouped by sender",
+  "datasetName": "average_reels_per_day"
+}

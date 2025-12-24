@@ -7,6 +7,7 @@ import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
 import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -37,6 +38,7 @@ import ru.marakogr.instanal.service.ChatService;
 import ru.marakogr.instanal.service.FriendService;
 import ru.marakogr.instanal.service.SuperUserService;
 import ru.marakogr.instanal.service.superset.chart.ChartService;
+import ru.marakogr.instanal.service.superset.dashboard.DashboardContext;
 import ru.marakogr.instanal.service.superset.dashboard.DashboardService;
 
 @Route("main")
@@ -93,11 +95,11 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
 
     actionMenu.addItem("Remove selected", e -> deleteSelectedFriends());
     actionMenu.addItem("Chat import", e -> importChatSelected());
-    actionMenu.addItem(
-        "Friends rating", e -> calculateRating(friendService, analysisService, user));
 
     var analyticsItem = actionMenu.addItem("Analytics");
     var analyticsSubMenu = analyticsItem.getSubMenu();
+    analyticsSubMenu.addItem(
+        "Calculate rating", e -> calculateRating(friendService, analysisService, user));
     var dashboardsItem = analyticsSubMenu.addItem("Dashboards");
     var dashboardsSubMenu = dashboardsItem.getSubMenu();
     dashboardsItem.addAttachListener(e -> rebuildDashboardsMenu(dashboardsSubMenu));
@@ -164,10 +166,24 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
   private void openCreateDashboardDialog(FriendRelation relation) {
     var dialog = new Dialog();
     dialog.setHeaderTitle("Create dashboard");
-    var name = new TextField("title");
+    dialog.setWidth("600px");
+
+    var name = new TextField("Title");
     name.setRequired(true);
+    name.setWidthFull();
+
+    var from = new DatePicker("From");
+    from.setClearButtonVisible(true);
+    from.setWidthFull();
+
+    var to = new DatePicker("To");
+    to.setClearButtonVisible(true);
+    to.setWidthFull();
+
     MultiSelectComboBox<String> charts = new MultiSelectComboBox<>("Charts");
     charts.setItems(chartService.getPossibleCharts());
+    charts.setWidthFull();
+
     var create =
         new Button(
             "Create",
@@ -176,19 +192,26 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
                 name.setInvalid(true);
                 return;
               }
-              var dashboard =
-                  dashboardService.createDashboard(
-                      relation, name.getValue(), charts.getSelectedItems().stream().toList());
+              var context =
+                  DashboardContext.builder()
+                      .chartIds(charts.getSelectedItems().stream().toList())
+                      .title(name.getValue())
+                      .to(to.getValue())
+                      .from(from.getValue())
+                      .relation(relation)
+                      .build();
+              var dashboard = dashboardService.createDashboard(context);
               UI.getCurrent()
                   .getPage()
                   .executeJs(
                       "window.open($0,'_blank')",
                       dashboardService.generateGuestLink(relation, dashboard));
               dialog.close();
-              ((Dialog) null).close();
             });
     create.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-    dialog.add(new VerticalLayout(name, charts, create));
+    var layout = new VerticalLayout(name, new HorizontalLayout(from, to), charts, create);
+    layout.setWidthFull();
+    dialog.add(layout);
     dialog.open();
   }
 

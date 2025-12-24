@@ -34,4 +34,10 @@ public record ChartPostRequest(
   public List<Integer> getDashboardIds() {
     return new ArrayList<>(dashboards);
   }
+
+  @Override
+  @JsonIgnore
+  public Long getDatasetId() {
+    return datasourceId;
+  }
 }

@@ -35,4 +35,10 @@ public record ChartResponse(
         ? Collections.emptyList()
         : dashboards.stream().map(IdWrapper::getId).map(Integer::parseInt).toList();
   }
+
+  @Override
+  @JsonIgnore
+  public Long getDatasetId() {
+    return datasourceId;
+  }
 }

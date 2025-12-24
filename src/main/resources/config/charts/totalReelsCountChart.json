@@ -1,0 +1,7 @@
+{
+  "vizType" : "big_number_total",
+  "params" : "{\n  \"subheader_font_size\" : 0.15,\n  \"subheader\" : \"Reels for period\",\n  \"time_format\" : \"smart_date\",\n  \"adhoc_filters\" : [ {\n    \"comparator\" : true,\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"has_reel\",\n    \"operatorId\" : \"IS_TRUE\",\n    \"expressionType\" : \"SIMPLE\",\n    \"operator\" : \"==\"\n  }, {\n    \"comparator\" : \"Last year\",\n    \"operator\" : \"TEMPORAL_RANGE\",\n    \"expressionType\" : \"SIMPLE\",\n    \"subject\" : \"upsert_date\",\n    \"clause\" : \"WHERE\"\n  }, {\n    \"comparator\" : \"%{chat_id}\",\n    \"clause\" : \"WHERE\",\n    \"subject\" : \"chat_id\",\n    \"operatorId\" : \"EQUALS\",\n    \"expressionType\" : \"SIMPLE\",\n    \"operator\" : \"==\"\n  } ],\n  \"metric\" : \"count\",\n  \"extra_form_data\" : { },\n  \"y_axis_format\" : \"SMART_NUMBER\",\n  \"conditional_formatting\" : [ ],\n  \"viz_type\" : \"big_number_total\",\n  \"header_font_size\" : 0.4\n}",
+  "description" : "Total number of reels for the selected period",
+  "slice": "Total number of reels for the selected period",
+  "datasetName": "messages"
+}
