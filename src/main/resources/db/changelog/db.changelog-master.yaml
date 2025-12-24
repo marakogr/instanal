@@ -7,6 +7,3 @@ databaseChangeLog:
       file: db/changelog/003-init-messages.yaml
   - include:
       file: db/changelog/004-create-average-reels-view.yaml
-
-  - include:
-      file: db/changelog/005-dashboard.yaml

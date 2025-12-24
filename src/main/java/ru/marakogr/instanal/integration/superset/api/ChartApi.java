@@ -14,7 +14,7 @@ public interface ChartApi extends ApiClient.Api {
   @Headers({
     "Content-Type: application/json",
   })
-  ApiResponse<IdWrapper> apiV1ChartPost(@RequestBody ChartPostRequest request);
+  ApiResponse<ChartResponse> apiV1ChartPost(@RequestBody ChartPostRequest request);
 
   @RequestLine("PUT /api/v1/chart/{id}")
   @Headers({
@@ -32,5 +32,6 @@ public interface ChartApi extends ApiClient.Api {
   @Headers({
     "Content-Type: application/json",
   })
-  ApiResponse<IdArrayWrapper> apiV1ChartGetList(@Param("q") @Nullable GetListSchema filter);
+  ApiResponse<GetListResponse<ChartResponse>> apiV1ChartGetList(
+      @Param("q") @Nullable GetListSchema filter);
 }

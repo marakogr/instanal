@@ -2,7 +2,9 @@ package ru.marakogr.instanal.integration.superset.model;
 
 import java.util.Collection;
 import java.util.Map;
+import lombok.Getter;
 
+@Getter
 public class ApiResponse<T> {
 
   private final int statusCode;
@@ -26,17 +28,5 @@ public class ApiResponse<T> {
     this.statusCode = statusCode;
     this.headers = headers;
     this.data = data;
-  }
-
-  public int getStatusCode() {
-    return statusCode;
-  }
-
-  public Map<String, Collection<String>> getHeaders() {
-    return headers;
-  }
-
-  public T getData() {
-    return data;
   }
 }

@@ -1,5 +1,8 @@
 package ru.marakogr.instanal.service.superset.dataset;
 
+import static ru.marakogr.instanal.integration.superset.GetListSchemaDsl.singleFilter;
+import static ru.marakogr.instanal.integration.superset.model.FilterOperator.EQ;
+
 import java.util.List;
 import java.util.Optional;
 import ru.marakogr.instanal.Utils;
@@ -34,12 +37,7 @@ public abstract class AbstractDatasetProvider implements DatasetProvider {
   protected DatasetPostRequest getOrCreate(
       String chatId, String ownerInstagramId, String friendInstagramId, List<Long> owners) {
     var tableName = type().tableName(name(), chatId);
-    var filter = new GetListSchema();
-    filter
-        .addFiltersItem(
-            new GetListSchemaFiltersInner().col("table_name").opr("eq").value(tableName))
-        .pageSize(1)
-        .page(0);
+    var filter = singleFilter("table_name", EQ, tableName, 0, 1);
     var result = datasetApi.apiV1DatasetGetList(filter).getData().getResult();
     if (result != null && !result.isEmpty()) {
       return DatasetPostRequest.builder()

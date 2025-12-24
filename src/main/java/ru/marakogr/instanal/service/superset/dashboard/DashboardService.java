@@ -1,14 +1,14 @@
 package ru.marakogr.instanal.service.superset.dashboard;
 
 import java.util.List;
-import ru.marakogr.instanal.db.model.Dashboard;
 import ru.marakogr.instanal.db.model.FriendRelation;
+import ru.marakogr.instanal.integration.superset.model.DashboardInfo;
 
 public interface DashboardService {
 
-  List<Dashboard> findByRelation(FriendRelation relation);
+  List<DashboardInfo> findByRelation(FriendRelation relation);
 
-  Dashboard createDashboard(FriendRelation relation, String name, List<String> chartIds);
+  DashboardInfo createDashboard(FriendRelation relation, String name, List<String> chartIds);
 
-  String generateGuestLink(FriendRelation friendRelation, Dashboard dashboard);
+  String generateGuestLink(FriendRelation friendRelation, DashboardInfo dashboard);
 }

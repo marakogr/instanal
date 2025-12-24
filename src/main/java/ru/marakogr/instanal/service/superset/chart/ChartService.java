@@ -9,4 +9,8 @@ public interface ChartService {
   List<ChartInfo> get(FriendRelation relation, List<String> chartIds);
 
   List<String> getPossibleCharts();
+
+  void addToDashboard(ChartInfo chartInfo, Integer dashboardId);
+
+  void addToDashboard(List<ChartInfo> chartInfo, Integer dashboardId);
 }

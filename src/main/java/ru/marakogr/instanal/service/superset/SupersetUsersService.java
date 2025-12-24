@@ -1,5 +1,8 @@
 package ru.marakogr.instanal.service.superset;
 
+import static ru.marakogr.instanal.integration.superset.GetListSchemaDsl.*;
+import static ru.marakogr.instanal.integration.superset.model.FilterOperator.EQ;
+
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -17,12 +20,7 @@ public class SupersetUsersService {
   }
 
   public Long getOrCreate(SuperUser user) {
-    var filter = new GetListSchema();
-    filter
-        .addFiltersItem(
-            new GetListSchemaFiltersInner().col("username").opr("eq").value(user.getInstagramId()))
-        .page(0)
-        .pageSize(1);
+    var filter = singleFilter("username", EQ, user.getInstagramId(), 0, 1);
     var response = usersApi.apiV1UsersGet(filter);
     return Optional.ofNullable(response)
         .map(ApiResponse::getData)

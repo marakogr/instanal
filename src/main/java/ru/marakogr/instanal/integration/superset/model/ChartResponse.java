@@ -2,21 +2,21 @@ package ru.marakogr.instanal.integration.superset.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.Builder;
 
 @Builder(toBuilder = true)
-public record ChartPostRequest(
+public record ChartResponse(
     @JsonProperty("slice_name") String sliceName,
     @JsonProperty("viz_type") String vizType,
     @JsonProperty("datasource_id") Long datasourceId,
-    @JsonProperty("owners") List<Long> owners,
+    @JsonProperty("owners") List<IdWrapper> owners,
     @JsonProperty("params") String params,
     @JsonProperty("description") String description,
     @JsonProperty("datasource_type") String datasourceType,
-    @JsonIgnore Long id,
-    List<Integer> dashboards)
+    Long id,
+    List<IdWrapper> dashboards)
     implements ChartInfo {
   @Override
   public Long getId() {
@@ -30,8 +30,9 @@ public record ChartPostRequest(
   }
 
   @Override
-  @JsonIgnore
   public List<Integer> getDashboardIds() {
-    return new ArrayList<>(dashboards);
+    return dashboards == null
+        ? Collections.emptyList()
+        : dashboards.stream().map(IdWrapper::getId).map(Integer::parseInt).toList();
   }
 }

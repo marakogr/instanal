@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
 import ru.marakogr.instanal.chat.Constants;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
-import ru.marakogr.instanal.integration.superset.api.ChartApi;
 import ru.marakogr.instanal.integration.superset.api.DashboardsApi;
 import ru.marakogr.instanal.integration.superset.model.ChartInfo;
-import ru.marakogr.instanal.integration.superset.model.ChartPostRequest;
+import ru.marakogr.instanal.integration.superset.model.DashboardCreateResponse;
+import ru.marakogr.instanal.integration.superset.model.DashboardInfo;
 import ru.marakogr.instanal.integration.superset.model.DashboardPostRequest;
 import ru.marakogr.instanal.service.superset.chart.ChartService;
 
@@ -27,26 +27,19 @@ public class DashboardBuilder {
   private final SupersetService supersetService;
   private final ChartService chartService;
 
-  public String build(FriendRelation relation, List<String> chartIds, String title) {
+  public DashboardInfo build(FriendRelation relation, List<String> chartIds, String title) {
     var charts = chartService.get(relation, chartIds);
     var owner = relation.getOwner();
     var friend = relation.getFriendSuperUser();
     var ownerName = owner.getInstagram();
     var friendName = friend.getInstagram();
     var owners = List.of(1L, owner.getSupersetUserId(), friend.getSupersetUserId());
-    var dashboardId = createDashboard(title, ownerName, friendName, owners, charts);
-    charts.forEach(chartInfo -> addToDashboard(chartInfo, Integer.parseInt(dashboardId)));
-    return dashboardId;
+    var dashboard = createDashboard(title, ownerName, friendName, owners, charts);
+    chartService.addToDashboard(charts, dashboard.getId());
+    return dashboard;
   }
 
-  private void addToDashboard(ChartInfo chartInfo, Integer dashboardId) {
-    if (chartInfo instanceof ChartPostRequest request) {
-      var chartRequest = request.toBuilder().dashboards(List.of(dashboardId)).build();
-      supersetService.getApi(ChartApi.class).apiV1ChartPut(request.id(), chartRequest);
-    }
-  }
-
-  private String createDashboard(
+  private DashboardInfo createDashboard(
       String title,
       String ownerName,
       String friendName,
@@ -64,7 +57,8 @@ public class DashboardBuilder {
             .build();
 
     var response = supersetService.getApi(DashboardsApi.class).apiV1DashboardPost(request);
-    return response.getData().getId();
+    DashboardCreateResponse data = response.getData();
+    return data.getResult().toBuilder().id(data.getId()).build();
   }
 
   public String buildJsonMetadata(List<ChartInfo> charts) {

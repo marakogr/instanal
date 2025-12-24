@@ -1,8 +1,10 @@
 package ru.marakogr.instanal.service.superset.chart;
 
+import static ru.marakogr.instanal.integration.superset.GetListSchemaDsl.singleFilter;
+import static ru.marakogr.instanal.integration.superset.model.FilterOperator.EQ;
+
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import ru.marakogr.instanal.db.model.FriendRelation;
 import ru.marakogr.instanal.integration.superset.SupersetService;
 import ru.marakogr.instanal.integration.superset.api.ChartApi;
@@ -39,7 +41,7 @@ public abstract class AbstractChartProvider implements ChartProvider {
 
   protected abstract String slice();
 
-  protected ChartPostRequest getOrCreate(
+  protected ChartInfo getOrCreate(
       Long datasetId,
       String vizType,
       String params,
@@ -48,25 +50,10 @@ public abstract class AbstractChartProvider implements ChartProvider {
       String ownerId,
       String friendId) {
     var sliceName = slice() + " for chat between " + ownerId + " and " + friendId;
-    var filter = new GetListSchema();
-    filter
-        .addFiltersItem(
-            new GetListSchemaFiltersInner().col("slice_name").opr("eq").value(sliceName))
-        .pageSize(1)
-        .page(0);
+    var filter = singleFilter("slice_name", EQ, sliceName, 0, 1);
     var result = chartApi.apiV1ChartGetList(filter).getData().getResult();
     if (result != null && !result.isEmpty()) {
-      return ChartPostRequest.builder()
-          .id(Long.parseLong(result.getFirst().getId()))
-          .sliceName(sliceName)
-          .vizType(vizType)
-          .datasourceId(datasetId)
-          .owners(owners)
-          .params(params)
-          .description(description + " for chat between " + ownerId + " and " + friendId)
-          .datasourceType("table")
-          .dashboards(Collections.emptyList())
-          .build();
+      return result.getFirst();
     }
     var chartRequest =
         ChartPostRequest.builder()
@@ -80,12 +67,6 @@ public abstract class AbstractChartProvider implements ChartProvider {
             .dashboards(Collections.emptyList())
             .build();
     var response = chartApi.apiV1ChartPost(chartRequest);
-    var id =
-        Optional.ofNullable(response)
-            .map(ApiResponse::getData)
-            .map(IdWrapper::getId)
-            .map(Long::parseLong)
-            .orElseThrow(() -> new RuntimeException("unable to create chart"));
-    return chartRequest.toBuilder().id(id).build();
+    return response.getData();
   }
 }

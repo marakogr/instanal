@@ -6,6 +6,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
+import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -95,10 +96,11 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     actionMenu.addItem(
         "Friends rating", e -> calculateRating(friendService, analysisService, user));
 
-    var analyticsItem = actionMenu.addItem("Analytics ▼");
+    var analyticsItem = actionMenu.addItem("Analytics");
     var analyticsSubMenu = analyticsItem.getSubMenu();
-
-    analyticsSubMenu.addItem("Dashboards", e -> openDashboardsDialog());
+    var dashboardsItem = analyticsSubMenu.addItem("Dashboards");
+    var dashboardsSubMenu = dashboardsItem.getSubMenu();
+    dashboardsItem.addAttachListener(e -> rebuildDashboardsMenu(dashboardsSubMenu));
 
     actions.add(addFriendBtn, actionDropdownBtn);
     card.add(actions);
@@ -130,44 +132,36 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
     actions.add(logoutBtn);
   }
 
-  private void openDashboardsDialog() {
+  private void rebuildDashboardsMenu(SubMenu dashboardsSubMenu) {
+    dashboardsSubMenu.removeAll();
+
     var selected = grid.getSelectedItems();
     if (selected.size() != 1) {
-      Notification.show("Select one friend");
+      dashboardsSubMenu.addItem("Select one friend").setEnabled(false);
       return;
     }
+
     var relation = selected.iterator().next();
-    var dialog = new Dialog();
-    dialog.setHeaderTitle("Dashboards");
-    var content = new VerticalLayout();
-    var createBtn =
-        new Button("Create dashboard", e -> openCreateDashboardDialog(relation, dialog));
-    createBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-    content.add(createBtn, new Hr());
-
-    dashboardService
-        .findByRelation(relation)
-        .forEach(
-            dashboard -> {
-              var open =
-                  new Button(
-                      dashboard.getTitle(),
-                      e ->
-                          UI.getCurrent()
-                              .getPage()
-                              .executeJs(
-                                  "window.open($0,'_blank')",
-                                  dashboardService.generateGuestLink(relation, dashboard)));
-              open.setWidthFull();
-              content.add(open);
-            });
-
-    dialog.add(content);
-    dialog.open();
+    var dashboards = dashboardService.findByRelation(relation);
+    if (dashboards.isEmpty()) {
+      dashboardsSubMenu.addItem("No dashboards").setEnabled(false);
+    } else {
+      dashboards.forEach(
+          dashboard ->
+              dashboardsSubMenu.addItem(
+                  dashboard.getTitle(),
+                  e ->
+                      UI.getCurrent()
+                          .getPage()
+                          .executeJs(
+                              "window.open($0,'_blank')",
+                              dashboardService.generateGuestLink(relation, dashboard))));
+    }
+    dashboardsSubMenu.addItem(new Hr());
+    dashboardsSubMenu.addItem("Add dashboard", e -> openCreateDashboardDialog(relation));
   }
 
-  private void openCreateDashboardDialog(FriendRelation relation, Dialog parent) {
+  private void openCreateDashboardDialog(FriendRelation relation) {
     var dialog = new Dialog();
     dialog.setHeaderTitle("Create dashboard");
     var name = new TextField("title");
@@ -191,7 +185,7 @@ public class MainView extends VerticalLayout implements BeforeEnterObserver {
                       "window.open($0,'_blank')",
                       dashboardService.generateGuestLink(relation, dashboard));
               dialog.close();
-              parent.close();
+              ((Dialog) null).close();
             });
     create.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
     dialog.add(new VerticalLayout(name, charts, create));
